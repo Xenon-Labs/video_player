@@ -1,7 +1,7 @@
 // Copyright 2013 The Flutter Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
+// @dart=2.9
 import 'dart:async';
 import 'dart:io';
 
@@ -28,7 +28,7 @@ class VideoPlayerValue {
   /// Constructs a video with the given values. Only [duration] is required. The
   /// rest will initialize with default values when unset.
   VideoPlayerValue({
-    required this.duration,
+    @required this.duration,
     this.size = Size.zero,
     this.position = Duration.zero,
     this.caption = Caption.none,
@@ -88,7 +88,7 @@ class VideoPlayerValue {
   /// A description of the error if present.
   ///
   /// If [hasError] is false this is `null`.
-  final String? errorDescription;
+  final String errorDescription;
 
   /// The [size] of the currently loaded video.
   final Size size;
@@ -120,32 +120,32 @@ class VideoPlayerValue {
   /// Returns a new instance that has the same values as this current instance,
   /// except for any overrides passed in as arguments to [copyWidth].
   VideoPlayerValue copyWith({
-    Duration? duration,
-    Size? size,
-    Duration? position,
-    Caption? caption,
-    List<DurationRange>? buffered,
-    bool? isInitialized,
-    bool? isPlaying,
-    bool? isLooping,
-    bool? isBuffering,
-    double? volume,
-    double? playbackSpeed,
-    String? errorDescription,
+    Duration duration,
+    Size size,
+    Duration position,
+    Caption caption,
+    List<DurationRange> buffered,
+    bool isInitialized,
+    bool isPlaying,
+    bool isLooping,
+    bool isBuffering,
+    double volume,
+    double playbackSpeed,
+    String errorDescription,
   }) {
     return VideoPlayerValue(
-      duration: duration ?? this.duration,
-      size: size ?? this.size,
-      position: position ?? this.position,
-      caption: caption ?? this.caption,
-      buffered: buffered ?? this.buffered,
-      isInitialized: isInitialized ?? this.isInitialized,
-      isPlaying: isPlaying ?? this.isPlaying,
-      isLooping: isLooping ?? this.isLooping,
-      isBuffering: isBuffering ?? this.isBuffering,
-      volume: volume ?? this.volume,
-      playbackSpeed: playbackSpeed ?? this.playbackSpeed,
-      errorDescription: errorDescription ?? this.errorDescription,
+      duration: this.duration,
+      size: this.size,
+      position: this.position,
+      caption: this.caption,
+      buffered: this.buffered,
+      isInitialized: this.isInitialized,
+      isPlaying: this.isPlaying,
+      isLooping: this.isLooping,
+      isBuffering: this.isBuffering,
+      volume: this.volume,
+      playbackSpeed: this.playbackSpeed,
+      errorDescription: this.errorDescription,
     );
   }
 
@@ -233,31 +233,31 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
 
   /// **Android only**. Will override the platform's generic file format
   /// detection with whatever is set here.
-  final VideoFormat? formatHint;
+  final VideoFormat formatHint;
 
   /// Describes the type of data source this [VideoPlayerController]
   /// is constructed with.
   final DataSourceType dataSourceType;
 
   /// Provide additional configuration options (optional). Like setting the audio mode to mix
-  final VideoPlayerOptions? videoPlayerOptions;
+  final VideoPlayerOptions videoPlayerOptions;
 
   /// Only set for [asset] videos. The package that the asset was loaded from.
-  final String? package;
+  final String package;
 
   /// Optional field to specify a file containing the closed
   /// captioning.
   ///
   /// This future will be awaited and the file will be loaded when
   /// [initialize()] is called.
-  final Future<ClosedCaptionFile>? closedCaptionFile;
+  final Future<ClosedCaptionFile> closedCaptionFile;
 
-  ClosedCaptionFile? _closedCaptionFile;
-  Timer? _timer;
+  ClosedCaptionFile _closedCaptionFile;
+  Timer _timer;
   bool _isDisposed = false;
-  Completer<void>? _creatingCompleter;
-  StreamSubscription<dynamic>? _eventSubscription;
-  late _VideoAppLifeCycleObserver _lifeCycleObserver;
+  Completer<void> _creatingCompleter;
+  StreamSubscription<dynamic> _eventSubscription;
+  _VideoAppLifeCycleObserver _lifeCycleObserver;
 
   /// The id of a texture that hasn't been initialized.
   @visibleForTesting
@@ -275,7 +275,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     _lifeCycleObserver.initialize();
     _creatingCompleter = Completer<void>();
 
-    late DataSource dataSourceDescription;
+    DataSource dataSourceDescription;
     switch (dataSourceType) {
       case DataSourceType.asset:
         dataSourceDescription = DataSource(
@@ -289,7 +289,6 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
           sourceType: DataSourceType.network,
           uri: dataSource,
           formatHint: formatHint,
-          httpHeaders: httpHeaders,
         );
         break;
       case DataSourceType.file:
@@ -302,12 +301,12 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
 
     if (videoPlayerOptions?.mixWithOthers != null) {
       await _videoPlayerPlatform
-          .setMixWithOthers(videoPlayerOptions!.mixWithOthers);
+          .setMixWithOthers(videoPlayerOptions.mixWithOthers);
     }
 
     _textureId = (await _videoPlayerPlatform.create(dataSourceDescription)) ??
         kUninitializedTextureId;
-    _creatingCompleter!.complete(null);
+    _creatingCompleter.complete(null);
     final Completer<void> initializingCompleter = Completer<void>();
 
     void eventListener(VideoEvent event) {
@@ -354,7 +353,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
 
     void errorListener(Object obj) {
       final PlatformException e = obj as PlatformException;
-      value = VideoPlayerValue.erroneous(e.message!);
+      value = VideoPlayerValue.erroneous(e.message);
       _timer?.cancel();
       if (!initializingCompleter.isCompleted) {
         initializingCompleter.completeError(obj);
@@ -370,7 +369,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   @override
   Future<void> dispose() async {
     if (_creatingCompleter != null) {
-      await _creatingCompleter!.future;
+      await _creatingCompleter.future;
       if (!_isDisposed) {
         _isDisposed = true;
         _timer?.cancel();
@@ -428,7 +427,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
           if (_isDisposed) {
             return;
           }
-          final Duration? newPosition = await position;
+          final Duration newPosition = await position;
           if (newPosition == null) {
             return;
           }
@@ -470,7 +469,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   }
 
   /// The position in the current video.
-  Future<Duration?> get position async {
+  Future<Duration> get position async {
     if (_isDisposed) {
       return null;
     }
@@ -551,7 +550,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     }
 
     // TODO: This would be more efficient as a binary search.
-    for (final caption in _closedCaptionFile!.captions) {
+    for (final caption in _closedCaptionFile.captions) {
       if (caption.start <= position && caption.end >= position) {
         return caption;
       }
@@ -573,7 +572,7 @@ class _VideoAppLifeCycleObserver extends Object with WidgetsBindingObserver {
   final VideoPlayerController _controller;
 
   void initialize() {
-    WidgetsBinding.instance!.addObserver(this);
+    WidgetsBinding.instance.addObserver(this);
   }
 
   @override
@@ -593,7 +592,7 @@ class _VideoAppLifeCycleObserver extends Object with WidgetsBindingObserver {
   }
 
   void dispose() {
-    WidgetsBinding.instance!.removeObserver(this);
+    WidgetsBinding.instance.removeObserver(this);
   }
 }
 
@@ -622,9 +621,9 @@ class _VideoPlayerState extends State<VideoPlayer> {
     };
   }
 
-  late VoidCallback _listener;
+  VoidCallback _listener;
 
-  late int _textureId;
+  int _textureId;
 
   @override
   void initState() {
@@ -651,8 +650,8 @@ class _VideoPlayerState extends State<VideoPlayer> {
 
   @override
   Widget build(BuildContext context) {
-    return _textureId == VideoPlayerController.kUninitializedTextureId
-        ? Container()
+    return _textureId == VideoPlayerController.kUninitializedTextureId ?
+         Container()
         : _videoPlayerPlatform.buildView(_textureId);
   }
 }
@@ -699,8 +698,8 @@ class VideoProgressColors {
 
 class _VideoScrubber extends StatefulWidget {
   _VideoScrubber({
-    required this.child,
-    required this.controller,
+    @required this.child,
+    @required this.controller,
   });
 
   final Widget child;
@@ -775,7 +774,7 @@ class VideoProgressIndicator extends StatefulWidget {
   VideoProgressIndicator(
     this.controller, {
     this.colors = const VideoProgressColors(),
-    required this.allowScrubbing,
+    @required this.allowScrubbing,
     this.padding = const EdgeInsets.only(top: 5.0),
   });
 
@@ -814,7 +813,7 @@ class _VideoProgressIndicatorState extends State<VideoProgressIndicator> {
     };
   }
 
-  late VoidCallback listener;
+  VoidCallback listener;
 
   VideoPlayerController get controller => widget.controller;
 
@@ -907,17 +906,17 @@ class ClosedCaption extends StatelessWidget {
   /// [VideoPlayerValue.caption].
   ///
   /// If [text] is null, nothing will be displayed.
-  const ClosedCaption({Key? key, this.text, this.textStyle}) : super(key: key);
+  const ClosedCaption({Key key, this.text, this.textStyle}) : super(key: key);
 
   /// The text that will be shown in the closed caption, or null if no caption
   /// should be shown.
-  final String? text;
+  final String text;
 
   /// Specifies how the text in the closed caption should look.
   ///
   /// If null, defaults to [DefaultTextStyle.of(context).style] with size 36
   /// font colored white.
-  final TextStyle? textStyle;
+  final TextStyle textStyle;
 
   @override
   Widget build(BuildContext context) {
@@ -942,7 +941,7 @@ class ClosedCaption extends StatelessWidget {
           ),
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 2.0),
-            child: Text(text!, style: effectiveTextStyle),
+            child: Text(text, style: effectiveTextStyle),
           ),
         ),
       ),
